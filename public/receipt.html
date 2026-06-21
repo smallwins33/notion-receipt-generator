@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學費收據</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .actions {
+      margin-bottom: 24px;
+    }
+
+    .download-btn {
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 14px 40px;
+      font-size: 15px;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      letter-spacing: 2px;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover { background: #333; }
+
+    .receipt {
+      width: 210mm;
+      background: #fff;
+      padding: 64px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+
+    .receipt::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: #111;
+      margin-bottom: 48px;
+    }
+
+    .receipt-header { margin-bottom: 48px; }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 6px;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    .receipt-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      color: #111;
+    }
+
+    .receipt-meta {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .meta-item { font-size: 13px; }
+    .meta-label { color: #aaa; margin-bottom: 4px; }
+    .meta-value { color: #333; font-weight: 500; }
+
+    .receipt-section { margin-bottom: 36px; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: #bbb;
+      margin-bottom: 16px;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: baseline;
+      padding: 14px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .field-row:last-child { border-bottom: none; }
+
+    .field-label {
+      width: 100px;
+      font-size: 13px;
+      color: #999;
+      flex-shrink: 0;
+    }
+
+    .field-value {
+      font-size: 15px;
+      color: #222;
+      font-weight: 500;
+    }
+
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .schedule-index { font-size: 11px; color: #bbb; width: 48px; }
+    .schedule-date { font-weight: 500; }
+    .schedule-day { font-size: 12px; color: #999; }
+
+    .amount-section {
+      margin: 40px 0;
+      padding: 32px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    .amount-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #bbb;
+      margin-bottom: 12px;
+    }
+
+    .amount-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: 2px;
+    }
+
+    .receipt-footer {
+      margin-top: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-handler { font-size: 13px; color: #999; }
+    .footer-handler span { color: #555; font-weight: 500; }
+    .footer-note { font-size: 11px; color: #ccc; }
+
+    .state-error {
+      padding: 80px 0;
+      text-align: center;
+      color: #c0392b;
+      font-size: 15px;
+    }
+
+    @media (max-width: 800px) {
+      .receipt { width: 100%; padding: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="actions" id="actions">
+    <button class="download-btn" onclick="downloadPDF()">下載 PDF</button>
+  </div>
+
+  <div class="receipt" id="receipt">
+    <div class="receipt-header">
+      <div class="brand-name" id="brandName"></div>
+      <div class="receipt-title">學費收據</div>
+    </div>
+
+    <div class="receipt-meta">
+      <div class="meta-item">
+        <div class="meta-label">收據編號</div>
+        <div class="meta-value" id="receiptNumber"></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">繳費日期</div>
+        <div class="meta-value" id="paymentDate"></div>
+      </div>
+    </div>
+
+    <div class="receipt-section">
+      <div class="field-row">
+        <div class="field-label">學員姓名</div>
+        <div class="field-value" id="studentName"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-label">課程項目</div>
+        <div class="field-value" id="courseName"></div>
+      </div>
+    </div>
+
+    <div class="receipt-section">
+      <div class="section-title">上課日期</div>
+      <div class="schedule-list" id="scheduleDates"></div>
+    </div>
+
+    <div class="amount-section">
+      <div class="amount-label">繳費金額</div>
+      <div class="amount-value" id="amount"></div>
+    </div>
+
+    <div class="receipt-footer">
+      <div class="footer-handler">經手人員　<span id="handlerName"></span></div>
+      <div class="footer-note">此收據由系統自動產生</div>
+    </div>
+  </div>
+
+<script>
+  const DAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+  function formatDate(str) {
+    if (!str) return '';
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}/${m}/${day}`;
+  }
+
+  function getDayOfWeek(str) {
+    const d = new Date(str);
+    if (isNaN(d)) return '';
+    return DAYS[d.getDay()];
+  }
+
+  function formatAmount(n) {
+    const num = Number(n);
+    if (isNaN(num)) return 'NT$ 0';
+    return `NT$ ${num.toLocaleString('zh-TW')}`;
+  }
+
+  // 從 URL 參數讀取資料
+  const p = new URLSearchParams(window.location.search);
+
+  const data = {
+    receiptNumber: p.get('n') || '',
+    studentName: p.get('s') || '',
+    courseName: p.get('c') || '',
+    amount: p.get('a') || '0',
+    paymentDate: p.get('pd') || '',
+    handlerName: p.get('h') || '',
+    brandName: p.get('b') || '',
+    scheduleDates: (p.get('dates') || '').split(',').filter(Boolean),
+  };
+
+  // 填入資料
+  const brandEl = document.getElementById('brandName');
+  if (data.brandName) {
+    brandEl.textContent = data.brandName;
+  } else {
+    brandEl.style.display = 'none';
+  }
+
+  document.getElementById('receiptNumber').textContent = data.receiptNumber;
+  document.getElementById('paymentDate').textContent = formatDate(data.paymentDate);
+  document.getElementById('studentName').textContent = data.studentName;
+  document.getElementById('courseName').textContent = data.courseName;
+  document.getElementById('amount').textContent = formatAmount(data.amount);
+  document.getElementById('handlerName').textContent = data.handlerName;
+
+  const container = document.getElementById('scheduleDates');
+  data.scheduleDates.forEach((dateStr, i) => {
+    const item = document.createElement('div');
+    item.className = 'schedule-item';
+    item.innerHTML = `
+      <span class="schedule-index">第 ${i + 1} 堂</span>
+      <span class="schedule-date">${formatDate(dateStr)}</span>
+      <span class="schedule-day">（${getDayOfWeek(dateStr)}）</span>
+    `;
+    container.appendChild(item);
+  });
+
+  document.title = `收據_${data.receiptNumber}_${data.studentName}`;
+
+  function downloadPDF() {
+    const btn = document.querySelector('.download-btn');
+    btn.textContent = '產生中⋯';
+    btn.disabled = true;
+
+    const opt = {
+      margin: 0,
+      filename: `收據_${data.receiptNumber}_${data.studentName}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+
+    html2pdf().set(opt).from(document.getElementById('receipt')).save().then(() => {
+      btn.textContent = '下載 PDF';
+      btn.disabled = false;
+    });
+  }
+</script>
+</body>
+</html>
