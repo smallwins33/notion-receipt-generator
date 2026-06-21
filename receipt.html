@@ -253,6 +253,14 @@
     return `NT$ ${num.toLocaleString('zh-TW')}`;
   }
 
+  // 驗證碼計算
+  function computeChecksum(s, a, pd) {
+    const nameVal = Array.from(s).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const amt = Number(a) || 0;
+    const dateVal = pd ? pd.replace(/-/g, '').slice(-4) : 0;
+    return ((nameVal * 7919) + (amt * 6271) + (Number(dateVal) * 3571)) % 100000;
+  }
+
   // 從 URL 參數讀取資料
   const p = new URLSearchParams(window.location.search);
 
@@ -266,6 +274,17 @@
     brandName: p.get('b') || '',
     scheduleDates: (p.get('dates') || '').split(',').filter(Boolean),
   };
+
+  // 驗證碼檢查
+  const urlChecksum = p.get('v');
+  const expectedChecksum = computeChecksum(data.studentName, data.amount, data.paymentDate);
+
+  if (!urlChecksum || Number(urlChecksum) !== expectedChecksum) {
+    document.getElementById('receipt').innerHTML =
+      '<div class="state-error">此收據無法驗證，可能已被竄改。</div>';
+    document.getElementById('actions').style.display = 'none';
+    throw new Error('驗證失敗');
+  }
 
   // 填入資料
   const brandEl = document.getElementById('brandName');
