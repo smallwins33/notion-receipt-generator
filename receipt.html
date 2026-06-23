@@ -43,8 +43,8 @@
       width: 180mm;
       background: #fff;
       padding: 60px;
-      border: 2px solid #111;
-      box-shadow: none;
+      border: none;
+      box-shadow: inset 0 0 0 2px #111;
     }
 
     .receipt::before {
@@ -266,14 +266,16 @@
   // 從 URL 參數讀取資料
   const p = new URLSearchParams(window.location.search);
 
+  function d(val) { try { return decodeURIComponent(val || ''); } catch(e) { return val || ''; } }
+
   const data = {
-    receiptNumber: p.get('n') || '',
-    studentName: p.get('s') || '',
-    courseName: p.get('c') || '',
+    receiptNumber: d(p.get('n')),
+    studentName: d(p.get('s')),
+    courseName: d(p.get('c')),
     amount: p.get('a') || '0',
     paymentDate: p.get('pd') || '',
-    handlerName: p.get('h') || '',
-    brandName: p.get('b') || '',
+    handlerName: d(p.get('h')),
+    brandName: d(p.get('b')),
     scheduleDates: (p.get('dates') || '').split(',').filter(Boolean),
   };
 
