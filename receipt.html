@@ -40,9 +40,9 @@
     .download-btn:hover { background: #333; }
 
     .receipt {
-      width: 210mm;
+      width: 180mm;
       background: #fff;
-      padding: 80px;
+      padding: 60px;
       border: 2px solid #111;
       box-shadow: none;
     }
@@ -323,7 +323,7 @@
     btn.disabled = true;
 
     const opt = {
-      margin: 0,
+      margin: 15,
       filename: `收據_${data.receiptNumber}_${data.studentName}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
